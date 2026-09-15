@@ -9,6 +9,7 @@
 #include <mgba/internal/arm/debugger/debugger.h>
 #include <mgba/internal/arm/decoder.h>
 
+#include <mgba/internal/gba/asset-tap.h>
 #include <mgba/internal/gba/bios.h>
 #include <mgba/internal/gba/cheats.h>
 #include <mgba/internal/gba/io.h>
@@ -67,6 +68,8 @@ void GBACreate(struct GBA* gba) {
 	gba->d.id = GBA_COMPONENT_MAGIC;
 	gba->d.init = GBAInit;
 	gba->d.deinit = 0;
+
+	GBAAssetTapInit(gba);
 }
 
 static void GBAInit(void* cpu, struct mCPUComponent* component) {
@@ -178,6 +181,7 @@ void GBAUnloadROM(struct GBA* gba) {
 }
 
 void GBADestroy(struct GBA* gba) {
+	GBAAssetTapDeinit(gba);
 	GBAUnloadROM(gba);
 	GBAUnloadMB(gba);
 
@@ -965,6 +969,8 @@ void GBAFrameStarted(struct GBA* gba) {
 }
 
 void GBAFrameEnded(struct GBA* gba) {
+	GBAAssetTapFrameEnded(gba);
+
 	int wasDirty = gba->memory.savedata.dirty;
 	GBASavedataClean(&gba->memory.savedata, gba->video.frameCounter);
 

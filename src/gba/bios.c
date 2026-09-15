@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/gba/bios.h>
 
+#include <mgba/internal/gba/asset-tap.h>
+
 #include <mgba/internal/arm/isa-inlines.h>
 #include <mgba/internal/arm/macros.h>
 #include <mgba/internal/gba/gba.h>
@@ -634,6 +636,10 @@ static void _unLz77(struct GBA* gba, int width) {
 	cpu->memory.accessSource = mACCESS_DECOMPRESS;
 	int remaining = (cpu->memory.load32(cpu, source, &cycles) & 0xFFFFFF00) >> 8;
 	// We assume the signature byte (0x10) is correct
+
+	// Asset tap: aqui origem (ROM) e destino aparecem juntos, e e o unico
+	// ponto do sistema onde isso acontece. Ver asset-tap.h.
+	GBAAssetTapDecompress(gba, width == 1 ? "lz77-wram" : "lz77-vram", source, dest, (uint32_t) remaining);
 	int blockheader = 0; // Some compilers warn if this isn't set, even though it's trivially provably always set
 	source += 4;
 	int blocksRemaining = 0;

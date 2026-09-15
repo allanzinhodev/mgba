@@ -1,6 +1,7 @@
 include(ExportDirectory)
 set(SOURCE_FILES
 	../gb/audio.c
+	asset-tap.c
 	audio.c
 	bios.c
 	cart/ereader.c

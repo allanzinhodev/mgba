@@ -61,6 +61,14 @@ void GBAAssetTapDeinit(struct GBA* gba);
 /** Uma descompressao de BIOS: kind e "lz77-wram", "lz77-vram", "huffman"... */
 void GBAAssetTapDecompress(struct GBA* gba, const char* kind, uint32_t source, uint32_t dest, uint32_t size);
 
+/**
+ * Uma transferencia de DMA, registrada no inicio dela.
+ *
+ * So entra no log quando toca graficos: destino em VRAM, paleta ou OAM, ou
+ * origem na ROM. O resto e som e logica de jogo, e encheria o arquivo.
+ */
+void GBAAssetTapDMA(struct GBA* gba, int channel, uint32_t source, uint32_t dest, uint32_t count, uint32_t width);
+
 /** Fim de quadro: anota OAM, paleta e tiles de OBJ quando mudarem. */
 void GBAAssetTapFrameEnded(struct GBA* gba);
 

@@ -171,6 +171,41 @@ void GBAAssetTapDecompress(struct GBA* gba, const char* kind, uint32_t source, u
 	fflush(s_tap.decompress);
 }
 
+
+void GBAAssetTapDMA(struct GBA* gba, int channel, uint32_t source, uint32_t dest, uint32_t count, uint32_t width) {
+	if (!s_tap.active) {
+		return;
+	}
+
+	/*
+	 * O FFTA NAO USA A DESCOMPRESSAO DA BIOS.
+	 *
+	 * Medido: uma sessao inteira de 21 mil quadros no FFTA nao gerou uma linha
+	 * sequer em decompress.jsonl. O jogo traz o proprio descompressor, o que
+	 * deixa o hook de BIOS sem nada a dizer justamente neste jogo.
+	 *
+	 * Sobra o DMA, que e por onde o grafico chega na VRAM de um jeito ou de
+	 * outro. Quando a origem e a ROM, a proveniencia sai direta. Quando e a
+	 * WRAM -- o caso de quem descomprime primeiro e copia depois -- o log ainda
+	 * serve: o DMA anterior que ENCHEU aquela regiao da WRAM tambem esta aqui,
+	 * e a cadeia se remonta lendo o arquivo de tras para frente.
+	 */
+	uint32_t destRegion = dest >> 24;
+	uint32_t sourceRegion = source >> 24;
+
+	/* 0x05 paleta, 0x06 VRAM, 0x07 OAM. 0x08-0x0D e a ROM. */
+	bool destGrafico = destRegion >= 0x05 && destRegion <= 0x07;
+	bool origemROM = sourceRegion >= 0x08 && sourceRegion <= 0x0D;
+	if (!destGrafico && !origemROM) {
+		return;
+	}
+
+	fprintf(s_tap.decompress,
+	        "{\"frame\":%u,\"kind\":\"dma%d\",\"src\":\"0x%08X\",\"dest\":\"0x%08X\",\"size\":%u}\n",
+	        gba->video.frameCounter, channel, source, dest, count * width);
+	fflush(s_tap.decompress);
+}
+
 void GBAAssetTapFrameEnded(struct GBA* gba) {
 	if (!s_tap.active) {
 		return;

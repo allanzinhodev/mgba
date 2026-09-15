@@ -6,6 +6,7 @@
 #include <mgba/internal/gba/dma.h>
 
 #include <mgba/internal/arm/macros.h>
+#include <mgba/internal/gba/asset-tap.h>
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/io.h>
 #include <mgba/internal/gba/serialize.h>
@@ -272,6 +273,14 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 	cpu->memory.accessSource = mACCESS_DMA;
 
 	if (info->count == info->nextCount) {
+		/*
+		 * Inicio de uma transferencia -- o unico instante em que os parametros
+		 * inteiros estao todos aqui. GBADMAService e chamada uma vez por
+		 * UNIDADE; registrar fora deste `if` daria milhares de linhas por
+		 * transferencia. Ver asset-tap.h.
+		 */
+		GBAAssetTapDMA(gba, number, source, dest, info->count, width);
+
 		if (width == 4) {
 			cycles += memory->waitstatesNonseq32[sourceRegion] + memory->waitstatesNonseq32[destRegion];
 			info->cycles = memory->waitstatesSeq32[sourceRegion] + memory->waitstatesSeq32[destRegion];
